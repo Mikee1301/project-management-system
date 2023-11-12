@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const mongoURI =  "mongodb+srv://admin:admin@mycluster.s4rowum.mongodb.net/project-management-system?retryWrites=true&w=majority";
+const mongoURI =  "mongodb://localhost:27017/project_management_system";
 const  connectionParams = {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  bufferCommands: true 
+  useUnifiedTopology: true
 };
 console.info("Please wait connecting to database.....");
 mongoose.connect(mongoURI, connectionParams)

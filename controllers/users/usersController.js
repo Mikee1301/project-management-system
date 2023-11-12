@@ -1,5 +1,6 @@
 const User = require("../../models/users/usersModels");
 const bcrypt = require('bcryptjs');
+
 async function createUser(req, res) {
   const { firstname, lastname, email, password, role, phone} = req.body;
   if (!role) {
@@ -35,15 +36,13 @@ async function createUser(req, res) {
         result: sanitizedUser
       });
     }
-    
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
 async function getUserByEmail(req, res) {
-  const { email } = req.query;
-
+  const { email } = req.params;
   try {
     const user = await User.findOne({ email: { $regex: new RegExp(email, 'i') } });
     if (user) {
@@ -61,7 +60,7 @@ async function getAllUsers(req, res) {
   try {
     const users = await User.find();
     const sanitizedUsers = users.map(user => {
-      const { password, _id,__v, ...userDetails } = user.toObject();
+      const { password,__v, ...userDetails } = user.toObject();
       return userDetails;
     });
     res.status(200).json(sanitizedUsers);
@@ -70,8 +69,42 @@ async function getAllUsers(req, res) {
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
+async function getUserById(req,res){
+  try {
+    const { id } = req.params
+    const user = await User.findById(id)
+    if ( user ) {
+      return res.status(200).json(user)
+    } else {
+      return res.status(404).json({ message: "No user found!"})
+    }
+  } catch (error) {
+    console.error("Error fetching user by id:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+}
+async function updateUserById(req, res) {
+  try {
+    const userId = req.params.id
+    const { ...updatedFields } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    Object.assign(user, updatedFields);
+    await user.save();
+    const { password, _id, __v, ...userDetails } = user.toObject();
+    res.status(200).json(userDetails);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 module.exports = {
   createUser,
   getUserByEmail,
-  getAllUsers
+  getAllUsers,
+  updateUserById,
+  getUserById
 };
